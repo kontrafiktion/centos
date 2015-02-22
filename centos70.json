@@ -2,9 +2,9 @@
   "builders": [
     {
       "boot_command": [
-        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort}}/ks7.cfg<enter>"
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort}}/{{ user `ksfile` }}<enter>"
       ],
-      "disk_size": 10140,
+      "disk_size": "{{ user `disk_size` }}",
       "floppy_files": [
         "floppy/vmware9.compat_dcache.h.patch"
       ],
@@ -23,18 +23,18 @@
       "ssh_wait_timeout": "10000s",
       "tools_upload_flavor": "linux",
       "type": "vmware-iso",
-      "vm_name": "centos70",
+      "vm_name": "{{ user `vmname` }}",
       "vmx_data": {
         "cpuid.coresPerSocket": "1",
-        "memsize": "512",
+        "memsize": "{{ user `mem_size` }}",
         "numvcpus": "1"
       }
     },
     {
       "boot_command": [
-        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort}}/ks7.cfg<enter>"
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort}}/{{ user `ksfile` }}<enter>"
       ],
-      "disk_size": 10140,
+      "disk_size": "{{ user `disk_size` }}",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
       "guest_os_type": "RedHat_64",
       "headless": "{{ user `headless` }}",
@@ -51,27 +51,17 @@
       "ssh_wait_timeout": "10000s",
       "type": "virtualbox-iso",
       "vboxmanage": [
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--memory",
-          "512"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--cpus",
-          "1"
-        ]
+        [ "modifyvm", "{{.Name}}", "--memory", "{{ user `mem_size` }}" ],
+        ["modifyvm", "{{.Name}}", "--cpus", "1"]
       ],
       "virtualbox_version_file": ".vbox_version",
-      "vm_name": "centos70"
+      "vm_name": "{{ user `vmname` }}"
     },
     {
       "boot_command": [
-        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort}}/ks7.cfg<enter>"
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort}}/{{ user `ksfile` }}<enter>"
       ],
-      "disk_size": 10140,
+      "disk_size": "{{ user `disk_size` }}",
       "guest_os_type": "centos",
       "http_directory": "http",
       "iso_checksum": "{{ user `iso_checksum` }}",
@@ -82,31 +72,21 @@
       ],
       "parallels_tools_flavor": "lin",
       "prlctl": [
-        [
-          "set",
-          "{{.Name}}",
-          "--memsize",
-          "512"
-        ],
-        [
-          "set",
-          "{{.Name}}",
-          "--cpus",
-          "1"
-        ]
+        [ "set", "{{.Name}}", "--memsize", "{{ user `mem_size` }}" ],
+        [ "set", "{{.Name}}", "--cpus", "1" ]
       ],
       "shutdown_command": "echo 'vagrant'|sudo -S shutdown -P now",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_wait_timeout": "10000s",
       "type": "parallels-iso",
-      "vm_name": "centos70"
+      "vm_name": "{{ user `vmname` }}"
     }
   ],
   "post-processors": [
     {
       "keep_input_artifact": false,
-      "output": "box/{{.Provider}}/centos70-{{user `cm`}}{{user `cm_version`}}-{{user `version`}}.box",
+      "output": "box/{{.Provider}}/{{ user `vmname` }}-{{user `cm`}}{{user `cm_version`}}-{{user `version`}}.box",
       "type": "vagrant"
     }
   ],
@@ -118,6 +98,8 @@
         "CLEANUP_PAUSE={{user `cleanup_pause`}}",
         "UPDATE={{user `update`}}",
         "INSTALL_VAGRANT_KEY={{user `install_vagrant_key`}}",
+        "INSTALL_DOCKER={{user `install_docker`}}"
+        "INSTALL_DESKTOP={{user `install_desktop`}}"
         "SSH_USERNAME={{user `ssh_username`}}",
         "SSH_PASSWORD={{user `ssh_password`}}",
         "http_proxy={{user `http_proxy`}}",
@@ -132,8 +114,10 @@
         "script/sshd.sh",
         "script/update.sh",
         "script/vagrant.sh",
+        "script/desktop.sh",
         "script/vmtool.sh",
         "script/cmtool.sh",
+        "script/docker.sh",
         "script/cleanup.sh"
       ],
       "type": "shell"
@@ -156,6 +140,12 @@
     "rsync_proxy": "{{env `rsync_proxy`}}",
     "ssh_password": "vagrant",
     "ssh_username": "vagrant",
+    "mem_size": 512,
+    "disk_size": 10140,
+    "vmname": "centos70",
+    "ksfile": "ks7.cfg",
+    "install_docker": "no",
+    "install_desktop": "no",
     "update": "false",
     "version": "0.1.0"
   }
